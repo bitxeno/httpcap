@@ -1,0 +1,23 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  run-ci:
+    strategy:
+      matrix:
+        go_version:
+          - 1.17.1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get install -y libpcap-dev
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go_version }}
+      - uses: actions/checkout@v2
+      - uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42.1
+          args: --timeout=5m
+      - run: go mod download
+      - run: go test -coverprofile=coverage.txt -covermode=atomic ./...
